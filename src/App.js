@@ -6,7 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Umbrella from '@mui/icons-material/Umbrella';
+import UmbrellaIcon from '@mui/icons-material/Umbrella';
+import UmbrellaOutlinedIcon from '@mui/icons-material/UmbrellaOutlined';
 import Thermostat from '@mui/icons-material/Thermostat';
 import AirIcon from '@mui/icons-material/Air';
 import Typography from '@mui/material/Typography';
@@ -20,6 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import Chip from '@mui/material/Chip';
 import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
+import ThunderstormOutlinedIcon from '@mui/icons-material/ThunderstormOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import { useState } from "react"
@@ -27,8 +29,12 @@ import dayjs from 'dayjs';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
+import Checkbox from '@mui/material/Checkbox';
+import './App.css';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const theme = createTheme();
+const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 export default function Weather() {
   const todayD = dayjs(new Date());
@@ -43,6 +49,10 @@ export default function Weather() {
   const [curTemp, setCurTemp] = useState("")
   const [curWind, setCurWind] = useState("")
   const [weatherData, setWeatherData] = useState([])
+  const [weatherDataAll, setWeatherDataAll] = useState([])
+
+  const [checkedRain, setCheckedRain] = React.useState(true)
+  const [checkedUmb, setCheckedUmb] = React.useState(true)
 
   const handleChange = (newValue) => {
     setDate(newValue);
@@ -53,7 +63,13 @@ export default function Weather() {
     setDateShow(`${dI}/${mI}/${yI}`)
   };
 
-  const listRain = weatherData.map((data, index, rain = false, lTime = "") =>{
+  const handleCheckRain = (event) => {
+    var checked = event.target.checked;
+    setCheckedRain(event.target.checked);
+  };
+
+
+  const listRain = weatherData.map((data, index, key) =>{
     var tTime = `${index}am`;
     
     if(index == 12){
@@ -65,9 +81,9 @@ export default function Weather() {
     }
 
     if(data >= 61 ){
-      return <Chip icon={<ThunderstormIcon />} label={tTime} size="small" color="info" />
+      return <span class={checkedRain ? "" : "hidden"}><Chip icon={<ThunderstormIcon />} label={tTime} size="small" color="info" /></span>
     } else{
-      return <Chip icon={<Umbrella />} label={tTime} size="small" variant="outlined" />
+      return <Chip icon={<UmbrellaIcon />} label={tTime} size="small" variant="outlined" />
     }
   }
   );
@@ -94,16 +110,33 @@ export default function Weather() {
         >
           {listRain}
         </Typography>
+        <IconCheckboxes/>
       </CardContent>
       <CardActions >
       </CardActions>
     </React.Fragment>
   );
 
+  function IconCheckboxes() {
+    return (
+      <div>
+        <Checkbox 
+          {...label} 
+          icon={<ThunderstormOutlinedIcon />} 
+          checkedIcon={<ThunderstormIcon />} 
+          checked={checkedRain}
+          onChange={handleCheckRain}
+          size="small"
+        />
+      </div>
+    );
+  }
+
   function HomePage() {
     const navigate = useNavigate();
 
     const handleSubmit = (event) => {
+      setCheckedRain(true);
       event.preventDefault();
       const url = `https://api.open-meteo.com/v1/forecast?latitude=2.90&longitude=101.64&hourly=weathercode&daily=weathercode,temperature_2m_max,windspeed_10m_max&current_weather=true&timezone=Asia%2FSingapore&start_date=${dateString}&end_date=${dateString}`;
       fetch(url).then((response) => {
@@ -153,6 +186,7 @@ export default function Weather() {
             setCurTemp(wTemp);
             setCurWind(wWind);
             setWeatherData(data.hourly.weathercode)
+            setWeatherDataAll(data.hourly.weathercode)
           })
         } else {
           console.log('Error happened')
@@ -194,7 +228,9 @@ export default function Weather() {
       <Box sx={{ mt: 3, minWidth: 275 } }>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Card variant="outlined">{card}</Card>
+            <Card variant="outlined">
+              {card}
+            </Card>
           </Grid>
         </Grid>
       </Box>
@@ -229,6 +265,7 @@ export default function Weather() {
     );
   }
 
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -247,7 +284,7 @@ export default function Weather() {
             <Grid container spacing={2} align="center">
               <Grid item xs={4}>
                 <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                  <Umbrella />
+                  <UmbrellaIcon />
                 </Avatar>
               </Grid>
               <Grid item xs={8}>
